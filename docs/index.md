@@ -159,7 +159,7 @@ See the [Agents](agents.md) documentation and How to guide
 To create a benchmark, you need two things:
 
     1. A dataset in your `nearai` dataset registry.
-    2. A solver for the dataset implemented in the `nearai` library for said dataset.
+    2. A solver for the dataset implemented in the `nearai` library for that dataset.
 
     If you have a dataset and a solver, you can run a benchmark.
 
