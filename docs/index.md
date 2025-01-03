@@ -117,7 +117,7 @@ nearai registry download zavodil.near/hello-world-agent/1
 ```
 
 !!! tip
-    If you start downloading and item, and cancel the download midway, you should delete the folder at `~/.nearai/registry/` to trigger a new download.
+    If you start downloading an item, and cancel the download midway, you should delete the folder at `~/.nearai/registry/` to trigger a new download.
 
 Update the metadata of an item with the registry update command
 ```
