@@ -31,6 +31,7 @@ from hub.api.v1.agent_routes import (
     get_agent_entry,
     invoke_agent_via_lambda,
     invoke_agent_via_url,
+    invoke_agent_in_cvm
 )
 from hub.api.v1.auth import AuthToken, get_auth
 from hub.api.v1.completions import Provider
@@ -828,6 +829,20 @@ def _run_agent(
                 run_id,
                 AuthData(**auth.model_dump()),  # TODO: https://github.com/nearai/nearai/issues/421
                 params,
+            )
+        elif runner == "cvm_runner":
+            invoke_agent_in_cvm(
+                run_id=run_id,
+                agent_id=specific_agent_version_to_run,
+                api_url=agent_api_url,
+                model=run_model.model,
+                temperature=run_model.temperature or 0.0,
+                max_tokens=run_model.max_completion_tokens or 1024,
+                max_iterations=1,
+                # env_vars=agent_env_vars,
+                thread_id=thread_id,
+                auth=AuthData(**auth.model_dump()),
+                provider="fireworks",
             )
         else:
             function_name = f"{runner}-{framework.lower()}"
