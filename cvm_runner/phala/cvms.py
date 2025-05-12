@@ -12,7 +12,7 @@ load_dotenv()
 @dataclass
 class PhalaConfig:
     """Configuration for Phala Cloud API client."""
-    base_url: str = os.getenv('PHALA_BASE_URL', 'https://api.phala.cloud')
+    base_url: str = os.getenv('PHALA_BASE_URL', 'https://cloud-api.phala.network')
     api_key: str = os.getenv('PHALA_API_KEY', '')
 
 class PhalaAPIError(Exception):
@@ -49,9 +49,9 @@ class PhalaClient:
             raise PhalaAPIError(f"API request failed: {str(e)}")
 
     # CVM Management Methods
-    def list_cvms(self) -> List[Dict]:
+    def list_cvms(self, user_id: str) -> List[Dict]:
         """List all CVMs associated with the account."""
-        return self._make_request('GET', '/api/v1/cvms')
+        return self._make_request('GET', f'/api/v1/cvms?user_id={user_id}')
 
     def create_cvm(self, 
                   name: str,
