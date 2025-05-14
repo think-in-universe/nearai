@@ -3,7 +3,7 @@ Function to get details of a specific Phala Confidential Virtual Machine (CVM).
 """
 
 from typing import Dict, Any
-from ..api.cvms import get_cvm_by_app_id
+from ...api.cvms import get_cvm_by_app_id
 
 def get_cvm(app_id: str, json_output: bool = False) -> Dict[str, Any]:
     """

@@ -3,7 +3,7 @@ Function to list Phala Confidential Virtual Machines (CVMs).
 """
 
 from typing import List, Dict, Any, Optional
-from ..api.cvms import get_cvms
+from ...api.cvms import get_cvms
 
 def list_cvms(json_output: bool = False) -> List[Dict[str, Any]]:
     """

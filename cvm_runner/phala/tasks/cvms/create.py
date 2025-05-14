@@ -5,10 +5,10 @@ Function to create a new Phala Confidential Virtual Machine (CVM).
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 import json
-from ..api.cvms import create_cvm, get_pubkey_from_cvm
-from ..api.teepods import get_teepods
-from ..utils.encrypt import encrypt_env_vars
-from ..utils.secrets import parse_env
+from ...api.cvms import create_cvm, get_pubkey_from_cvm
+from ...api.teepods import get_teepods
+from ...utils.encrypt import encrypt_env_vars
+from ...utils.secrets import parse_env
 
 # Default configurations
 DEFAULT_VCPU = 2
