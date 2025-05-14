@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 import uvicorn
-from dstack_sdk import TdxQuoteResponse  # type: ignore
+# from dstack_sdk import TdxQuoteResponse  # type: ignore
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -19,7 +19,7 @@ from nearai.shared.client_config import ClientConfig  # type: ignore
 from nearai.shared.inference_client import InferenceClient  # type: ignore
 from nearai.shared.near.sign import verify_signed_message  # type: ignore
 from pydantic import BaseModel
-from quote.quote import Quote  # type: ignore
+# from quote.quote import Quote  # type: ignore
 
 bearer = HTTPBearer(auto_error=False)
 app = FastAPI()
@@ -55,13 +55,13 @@ class AppState:
     assignment: AssignRequest | None
     agent: Agent | None
     auth: AuthData | None
-    quote: Quote | None
+    # quote: Quote | None
 
     def __init__(self) -> None:  # noqa: D107
         self.agent = None
         self.assignment = None
         self.auth = None
-        self.quote = None
+        # self.quote = None
 
 
 class RunRequest(BaseModel):
@@ -218,15 +218,15 @@ class QuoteResponse(BaseModel):
     quote: str
 
 
-@app.get("/quote", response_model=TdxQuoteResponse)
-def get_quote(app_state: AppState = Depends(get_app_state)):
-    if app_state.quote is None:
-        app_state.quote = Quote()
-    cmd = """echo | openssl s_client -connect localhost:443 2>/dev/null |\
-     openssl x509 -pubkey -noout -outform DER | openssl dgst -sha256"""
-    ssl_pub_key = subprocess.check_output(cmd, shell=True).decode("utf-8").split("= ")[1].strip()
-    quote = app_state.quote.get_quote(ssl_pub_key)
-    return quote
+# @app.get("/quote", response_model=TdxQuoteResponse)
+# def get_quote(app_state: AppState = Depends(get_app_state)):
+#     if app_state.quote is None:
+#         app_state.quote = Quote()
+#     cmd = """echo | openssl s_client -connect localhost:443 2>/dev/null |\
+#      openssl x509 -pubkey -noout -outform DER | openssl dgst -sha256"""
+#     ssl_pub_key = subprocess.check_output(cmd, shell=True).decode("utf-8").split("= ")[1].strip()
+#     quote = app_state.quote.get_quote(ssl_pub_key)
+#     return quote
 
 
 if __name__ == "__main__":
