@@ -1,25 +1,11 @@
 from typing import List, Optional
 from dataclasses import dataclass
+
+from cvm_runner.phala.api.types import TEEPod, Image
 from .client import api_client
 from .constants import API_ENDPOINTS
 
-@dataclass
-class Image:
-    """Represents a TEEPod image"""
-    image_id: int
-    name: str
-    tag: str
-    # Add other image fields as needed
-
-@dataclass
-class TEEPod:
-    """Represents a TEEPod with its images"""
-    teepod_id: int
-    name: str
-    images: Optional[List[Image]] = None
-    # Add other TEEPod fields as needed
-
-async def get_teepods() -> List[TEEPod]:
+def get_teepods() -> List[TEEPod]:
     """
     Get all TEEPods with their images
     
@@ -30,14 +16,14 @@ async def get_teepods() -> List[TEEPod]:
         Exception: If the API request fails
     """
     try:
-        response = await api_client.get(API_ENDPOINTS.TEEPODS)
+        response = api_client.get(API_ENDPOINTS.TEEPODS)
         # Parse the response into TEEPod objects
         # Note: You'll need to implement the actual parsing logic based on your API response structure
         return [TEEPod(**pod_data) for pod_data in response.get("nodes", [])]
     except Exception as error:
         raise Exception(f"Failed to get TEEPods: {str(error)}")
 
-async def get_teepod_images(teepod_id: str) -> List[Image]:
+def get_teepod_images(teepod_id: str) -> List[Image]:
     """
     Get images for a TEEPod
     This function is maintained for backwards compatibility.
@@ -54,7 +40,7 @@ async def get_teepod_images(teepod_id: str) -> List[Image]:
     """
     try:
         # First try to get TEEPod with embedded images
-        teepods = await get_teepods()
+        teepods = get_teepods()
         teepod = next((pod for pod in teepods if pod.teepod_id == int(teepod_id)), None)
         
         # If we found the TEEPod and it has images, return them
@@ -62,7 +48,7 @@ async def get_teepod_images(teepod_id: str) -> List[Image]:
             return teepod.images
         
         # Fallback to the original implementation
-        response = await api_client.get(API_ENDPOINTS.TEEPOD_IMAGES(teepod_id))
+        response = api_client.get(API_ENDPOINTS.TEEPOD_IMAGES(teepod_id))
         # Parse the response into Image objects
         # Note: You'll need to implement the actual parsing logic based on your API response structure
         return [Image(**image_data) for image_data in response]
