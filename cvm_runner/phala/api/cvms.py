@@ -1,5 +1,4 @@
 from typing import Dict, List, Optional, Any
-from dotenv import load_dotenv
 import logging
 from .client import api_client
 from .constants import API_ENDPOINTS
@@ -15,10 +14,6 @@ from .types import (
     UpdateCvmPayload,
     ResizeCvmPayload
 )
-import json
-
-# Load environment variables
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 

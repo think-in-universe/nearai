@@ -4,6 +4,10 @@ from typing import Any, Dict, Optional, TypeVar
 import requests
 from .constants import CLOUD_API_URL
 from .credentials import get_api_key
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logger = logging.getLogger(__name__)
