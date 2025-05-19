@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, Optional
 
 import uvicorn
-# from dstack_sdk import TdxQuoteResponse  # type: ignore
+from dstack_sdk import TdxQuoteResponse  # type: ignore
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -19,7 +19,7 @@ from nearai.shared.client_config import ClientConfig  # type: ignore
 from nearai.shared.inference_client import InferenceClient  # type: ignore
 from nearai.shared.near.sign import verify_signed_message  # type: ignore
 from pydantic import BaseModel
-# from quote.quote import Quote  # type: ignore
+from cvm_runner.quote import Quote  # type: ignore
 
 bearer = HTTPBearer(auto_error=False)
 app = FastAPI()
@@ -88,7 +88,7 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)  # Changed from DEBUG to INFO
 logger.addHandler(stream_handler)
 logger.addHandler(console_handler)
 
@@ -144,7 +144,7 @@ def init_runner(assignment: AssignRequest, auth: AuthData):
     app.state.app_state.agent = agent
 
 
-@app.post("/assign")
+@app.post("/assign_cvm")
 def assign(
     request: AssignRequest,
     auth: AuthData = Depends(assert_auth),
@@ -184,7 +184,6 @@ def handler(
     inference_client = InferenceClient(client_config)
     hub_client = client_config.get_hub_client()
     env = Environment(
-        path=agent.temp_dir,
         agents=[agent],
         client=inference_client,
         hub_client=hub_client,
@@ -197,7 +196,7 @@ def handler(
         print(agent.welcome_title)
     if agent.welcome_description:
         print(agent.welcome_description)
-    env.run("", agent.max_iterations)
+    env.run()
 
 
 @app.get("/logs")
@@ -218,15 +217,15 @@ class QuoteResponse(BaseModel):
     quote: str
 
 
-# @app.get("/quote", response_model=TdxQuoteResponse)
-# def get_quote(app_state: AppState = Depends(get_app_state)):
-#     if app_state.quote is None:
-#         app_state.quote = Quote()
-#     cmd = """echo | openssl s_client -connect localhost:443 2>/dev/null |\
-#      openssl x509 -pubkey -noout -outform DER | openssl dgst -sha256"""
-#     ssl_pub_key = subprocess.check_output(cmd, shell=True).decode("utf-8").split("= ")[1].strip()
-#     quote = app_state.quote.get_quote(ssl_pub_key)
-#     return quote
+@app.get("/quote", response_model=TdxQuoteResponse)
+def get_quote(app_state: AppState = Depends(get_app_state)):
+    if app_state.quote is None:
+        app_state.quote = Quote()
+    cmd = """echo | openssl s_client -connect localhost:443 2>/dev/null |\
+     openssl x509 -pubkey -noout -outform DER | openssl dgst -sha256"""
+    ssl_pub_key = subprocess.check_output(cmd, shell=True).decode("utf-8").split("= ")[1].strip()
+    quote = app_state.quote.get_quote(ssl_pub_key)
+    return quote
 
 
 if __name__ == "__main__":

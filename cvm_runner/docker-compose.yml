@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  cvm_runner:
+    image: robortyan/nearai_cvm_runner:latest
+    platform: linux/amd64
+    ports:
+      - "8080:443"
+    volumes:
+      - ~/.nearai/registry:/root/.nearai/registry
+    env_file:
+      - ../.env
+    environment:
+      RUNNER_API_KEY: ${RUNNER_API_KEY:-"custom-local-runner"}
+      DD_APM_ENABLED: false
+      DD_LOGS_ENABLED: false
+      ACCOUNT_ID: ${ACCOUNT_ID}
+      USE_AGENT_CACHE: ${USE_AGENT_CACHE:-true}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G

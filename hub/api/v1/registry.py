@@ -12,6 +12,7 @@ import botocore.exceptions
 from dotenv import load_dotenv
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from nearai.registry import get_registry_folder
 from nearai.shared.client_config import DEFAULT_NAMESPACE
 from pydantic import BaseModel, field_validator, model_validator
 from sqlmodel import col, delete, select, text
@@ -225,6 +226,20 @@ async def upload_file(
     return {"status": "File uploaded", "path": key}
 
 
+class FileChunkIterator:
+    def __init__(self, file_obj, chunk_size=8192):
+        self.file_obj = file_obj
+        self.chunk_size = chunk_size
+
+    def iter_chunks(self):
+        while True:
+            chunk = self.file_obj.read(self.chunk_size)
+            if not chunk:
+                break
+            yield chunk
+        self.file_obj.close()
+
+
 @v1_router.post("/download_file")
 def download_file(
     entry: RegistryEntry = Depends(get_read_access),
@@ -238,8 +253,25 @@ def download_file_inner(
     path: str = Body(),
 ):
     source = entry.details.get("_source")
+    data_source = getenv("DATA_SOURCE", "registry")
 
-    if source is None:
+    # Handle local files data source
+    if data_source == "local_files":
+        # Get the base directory for local files
+        entry_path = get_registry_folder() / entry.namespace / entry.name / entry.version
+        file_path = entry_path / path
+
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail=f"File not found: {path}")
+
+        if not file_path.is_file():
+            raise HTTPException(status_code=400, detail=f"Not a file: {path}")
+
+        # Create a file-like object that can be streamed
+        file_obj = open(file_path, "rb")
+        return FileChunkIterator(file_obj)
+
+    elif source is None:
         # Default source, which is S3
         assert isinstance(S3_BUCKET, str)
         bucket = S3_BUCKET
@@ -321,8 +353,24 @@ def list_files(entry: RegistryEntry = Depends(get_read_access)) -> List[Filename
 def list_files_inner(entry: RegistryEntry) -> List[Filename]:
     """Lists all files that belong to an entry."""
     source = entry.details.get("_source")
+    data_source = getenv("DATA_SOURCE", "registry")
 
-    if source is None:
+    # Handle local files data source
+    if data_source == "local_files":
+        # Get the base directory for local files
+        entry_path = get_registry_folder() / entry.namespace / entry.name / entry.version
+        if not entry_path.exists():
+            logger.warning(f"Local files directory not found: {entry_path}")
+            return []
+
+        files = []
+        for file_path in entry_path.rglob("*"):
+            if file_path.is_file():
+                # Get relative path from entry directory
+                rel_path = file_path.relative_to(entry_path)
+                files.append(Filename(filename=str(rel_path)))
+        return files
+    elif source is None:
         # Default source, which is S3
         assert isinstance(S3_BUCKET, str)
         bucket = S3_BUCKET
