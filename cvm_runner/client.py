@@ -94,7 +94,9 @@ class CvmClient:
         """Assigns an agent to a CVM."""
         logger.info(f"Assigning agent {request.agent_id} to CVM")
         response = self._make_request("POST", "assign_cvm", json=request.model_dump())
-        return Worker(**response.json())
+        # TODO: return worker with the port from response
+        # return Worker(**response.json())
+        return Worker(port=8443)
 
     def run(self, request: RunRequest):
         """Runs an agent on a CVM."""

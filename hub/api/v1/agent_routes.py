@@ -160,15 +160,12 @@ def invoke_agent_in_cvm(
     cvm_runner_pool_port = getenv("CVM_RUNNER_POOL_PORT", "1234")
     cvm_manager_url = f"https://{cvm_runner_host}:{cvm_runner_pool_port}"
 
-    # Get SSL verification setting from environment
-    verify_ssl = getenv("CVM_RUNNER_VERIFY_SSL", "true").lower() == "true"
-
     logger.info(f"CVM manager URL: {cvm_manager_url}")
 
     # TODO: add attestation when SSL certificate
     client = CvmClient(cvm_manager_url, auth)
     if not client.is_assigned().is_assigned:
-        worker = None
+        # worker = None
         # while not worker:
         logger.info(f"Getting CVM worker from {cvm_manager_url}")
         try:
@@ -184,22 +181,12 @@ def invoke_agent_in_cvm(
                 max_iterations=max_iterations,
                 env_vars={"agent_env_vars": "test"},
             )
-            headers = {"Authorization": f"Bearer {auth.model_dump_json()}"}
-            worker = Worker(
-                **requests.post(
-                    f"{cvm_manager_url}/assign_cvm",
-                    json=assign_request.model_dump(),
-                    headers=headers,
-                    verify=verify_ssl,  # Use environment variable
-                ).json()
-            )
+            worker = client.assign(assign_request)
             logger.info(f"Assigned and running agent {agent_id} in CVM at {worker.port}")
         except Exception as e:
             logger.info(f"Error getting CVM worker: {e}")
             # time.sleep(1)
             return None
-
-    # return worker
 
     return client.run(RunRequest(
         run_id=run_id,
