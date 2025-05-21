@@ -7,7 +7,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 import requests
-from dcap_qvl import verify_quote  # type: ignore
+from dcap_qvl_x86 import verify_quote  # type: ignore
 from dstack_sdk import TdxQuoteResponse  # type: ignore
 from nearai.shared.auth_data import AuthData
 from cvm_runner.app.main import AssignRequest, IsAssignedResp, QuoteResponse, RunRequest, Worker
@@ -24,12 +24,14 @@ class CvmClient:
         """
         self.url = url
         self.headers = {"Authorization": f"Bearer {auth.model_dump_json()}"} if auth else {}
-        self.is_attested = False
 
         # Get and store server's certificate
         parsed = urlparse(url)
         self.hostname = parsed.hostname or "localhost"
         self.port = str(parsed.port or (443 if parsed.scheme == "https" else 80))
+
+        # skip attestation for localhost
+        self.is_attested = True if self.hostname == "localhost" else False
 
         cert_file = tempfile.NamedTemporaryFile(delete=True, suffix=".pem")
         self.cert_path = cert_file.name
@@ -60,10 +62,10 @@ class CvmClient:
 
         # Get quote from server, no auth!
         response = requests.get(f"{self.url}/quote", verify=False)
-        print(response.text)
+        print("quote response", response.text)
         response.raise_for_status()
         quote = TdxQuoteResponse(**response.json())
-        print(quote)
+        print("quote parsed", quote)
 
         # Get certificate's public key hash
         cmd = f"""openssl x509 -in {self.cert_path} -pubkey -noout -outform DER | openssl dgst -sha256"""
@@ -101,9 +103,9 @@ class CvmClient:
         return response.json()
 
     def is_assigned(self) -> IsAssignedResp:
-        """Checks the health of the CVM."""
+        """Checks whether the CVM is assigned to a worker."""
         response = self._make_request("GET", "is_assigned")
-        logger.info(f"Health response: {response.json()}")
+        logger.info(f"Is assigned response: {response.json()}")
         return IsAssignedResp(**response.json())
 
     def attest(self):

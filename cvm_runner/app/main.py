@@ -55,13 +55,13 @@ class AppState:
     assignment: AssignRequest | None
     agent: Agent | None
     auth: AuthData | None
-    # quote: Quote | None
+    quote: Quote | None
 
     def __init__(self) -> None:  # noqa: D107
         self.agent = None
         self.assignment = None
         self.auth = None
-        # self.quote = None
+        self.quote = None
 
 
 class RunRequest(BaseModel):

@@ -5,11 +5,7 @@ services:
     image: robortyan/nearai_cvm_runner:latest
     platform: linux/amd64
     ports:
-      - "8080:443"
-    volumes:
-      - ~/.nearai/registry:/root/.nearai/registry
-    env_file:
-      - ../.env
+      - "8443:443"
     environment:
       RUNNER_API_KEY: ${RUNNER_API_KEY:-"custom-local-runner"}
       DD_APM_ENABLED: false

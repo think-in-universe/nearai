@@ -13,7 +13,8 @@ from nearai.agents.local_runner import LocalRunner
 from nearai.clients.lambda_client import LambdaWrapper
 from nearai.shared.auth_data import AuthData
 from nearai.shared.client_config import DEFAULT_TIMEOUT
-from cvm_runner.app.main import AssignRequest, Worker
+from cvm_runner.app.main import AssignRequest, RunRequest, Worker
+from cvm_runner.client import CvmClient
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, inspect, text
 
@@ -157,11 +158,18 @@ def invoke_agent_in_cvm(
 ):
     cvm_runner_host = getenv("CVM_RUNNER_HOST", "cvm.near.ai")
     cvm_runner_pool_port = getenv("CVM_RUNNER_POOL_PORT", "1234")
-    cvm_manager_url = f"http://{cvm_runner_host}:{cvm_runner_pool_port}"
+    cvm_manager_url = f"https://{cvm_runner_host}:{cvm_runner_pool_port}"
 
-    worker = None
+    # Get SSL verification setting from environment
+    verify_ssl = getenv("CVM_RUNNER_VERIFY_SSL", "true").lower() == "true"
 
-    while not worker:
+    logger.info(f"CVM manager URL: {cvm_manager_url}")
+
+    # TODO: add attestation when SSL certificate
+    client = CvmClient(cvm_manager_url, auth)
+    if not client.is_assigned().is_assigned:
+        worker = None
+        # while not worker:
         logger.info(f"Getting CVM worker from {cvm_manager_url}")
         try:
             assign_request = AssignRequest(
@@ -182,18 +190,20 @@ def invoke_agent_in_cvm(
                     f"{cvm_manager_url}/assign_cvm",
                     json=assign_request.model_dump(),
                     headers=headers,
+                    verify=verify_ssl,  # Use environment variable
                 ).json()
             )
-            # TODO: add attestation when SSL certificate is available from guest manager
-            # manager_client = CvmClient(cvm_manager_url, auth)
-
             logger.info(f"Assigned and running agent {agent_id} in CVM at {worker.port}")
-
         except Exception as e:
             logger.info(f"Error getting CVM worker: {e}")
-        time.sleep(1)
+            # time.sleep(1)
+            return None
 
-    return worker
+    # return worker
+
+    return client.run(RunRequest(
+        run_id=run_id,
+    ))
 
 
 @run_agent_router.post("/threads/runs", tags=["Agents", "Assistants"])  # OpenAI compatibility
