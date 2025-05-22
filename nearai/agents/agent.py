@@ -204,6 +204,8 @@ class Agent(object):
         self.welcome_title: Optional[str] = None
         self.welcome_description: Optional[str] = None
 
+        self.agent_runner: Optional[str] = None
+
         self.set_agent_metadata(metadata)
         self.agent_files = agent_files
         self.original_cwd = os.getcwd()
@@ -294,7 +296,7 @@ class Agent(object):
                 self.model_provider = defaults.get("model_provider", self.model_provider)
                 self.model_temperature = defaults.get("model_temperature", self.model_temperature)
                 self.model_max_tokens = defaults.get("model_max_tokens", self.model_max_tokens)
-
+                self.agent_runner = defaults.get("runner", self.agent_runner)
         if not self.version or not self.name:
             raise ValueError("Both 'version' and 'name' must be non-empty in metadata.")
 
