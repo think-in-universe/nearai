@@ -14,7 +14,7 @@ from ...utils.secrets import parse_env
 DEFAULT_VCPU = 2
 DEFAULT_MEMORY = 4096  # MB
 DEFAULT_DISK_SIZE = 40  # GB
-DEFAULT_TEEPOD_ID = "3"
+DEFAULT_TEEPOD_ID = "6" # TODO: update the TEE Pod ID
 DEFAULT_IMAGE = "dstack-0.3.5"
 
 def create_new_cvm(

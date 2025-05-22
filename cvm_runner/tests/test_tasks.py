@@ -137,7 +137,7 @@ def test_create_cvm(compose_file):
     try:
         # Test creating a new CVM
         cvm = create_new_cvm(
-            name="nearai-cvm-runner",
+            name="nearai-cvm-runner-1",
             compose_file="./docker-compose.yml",
             env_file="./.env.phala",
             vcpu=2,

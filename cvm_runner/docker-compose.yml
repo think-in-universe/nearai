@@ -5,7 +5,9 @@ services:
     image: robortyan/nearai_cvm_runner:latest
     platform: linux/amd64
     ports:
-      - "8443:443"
+      - "8001:443"
+      - "8002:443"
+      - "8003:443"
     environment:
       RUNNER_API_KEY: ${RUNNER_API_KEY:-"custom-local-runner"}
       DD_APM_ENABLED: false
@@ -14,10 +16,11 @@ services:
       USE_AGENT_CACHE: ${USE_AGENT_CACHE:-true}
     restart: unless-stopped
     deploy:
+      replicas: 3
       resources:
         limits:
           cpus: '2'
-          memory: 4G
+          memory: 2G
         reservations:
           cpus: '1'
-          memory: 2G
+          memory: 1G
