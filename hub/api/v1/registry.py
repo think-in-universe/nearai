@@ -199,6 +199,15 @@ class EntryMetadata(EntryMetadataInput):
 
 
 def check_file_exists(key):
+    data_source = getenv("DATA_SOURCE", "registry")
+    
+    # Handle local files data source
+    if data_source == "local_files":
+        # Get the base directory for local files
+        file_path = get_registry_folder() / key
+        return file_path.exists() and file_path.is_file()
+    
+    # Default S3 source
     try:
         s3.head_object(Bucket=S3_BUCKET, Key=key)
         return True
@@ -216,12 +225,25 @@ async def upload_file(
 ):
     entry = get(entry_location)
     key = entry.get_key(path)
+    data_source = getenv("DATA_SOURCE", "registry")
 
     if check_file_exists(key):
         raise HTTPException(status_code=400, detail=f"File {key} already exists.")
 
-    assert isinstance(S3_BUCKET, str)
-    s3.upload_fileobj(file.file, S3_BUCKET, key)
+    # Handle local files data source
+    if data_source == "local_files":
+        # Get the base directory for local files
+        file_path = get_registry_folder() / key
+        # Create parent directories if they don't exist
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        # Write the file
+        with open(file_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+    else:
+        # Default S3 source
+        assert isinstance(S3_BUCKET, str)
+        s3.upload_fileobj(file.file, S3_BUCKET, key)
 
     return {"status": "File uploaded", "path": key}
 
