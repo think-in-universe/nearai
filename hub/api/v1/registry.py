@@ -224,8 +224,8 @@ async def upload_file(
     file: UploadFile = File(...),
 ):
     entry = get(entry_location)
-    key = entry.get_key(path)
     data_source = getenv("DATA_SOURCE", "registry")
+    key = entry.namespace / entry.name / entry.version / path if data_source == "local_files" else entry.get_key(path)
 
     if check_file_exists(key):
         raise HTTPException(status_code=400, detail=f"File {key} already exists.")
