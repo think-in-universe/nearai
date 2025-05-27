@@ -839,7 +839,7 @@ def _run_agent(
                 temperature=run_model.temperature or 0.0,
                 max_tokens=run_model.max_completion_tokens or 1024,
                 max_iterations=1,
-                # env_vars=agent_env_vars,
+                env_vars=user_env_vars,
                 thread_id=thread_id,
                 auth=AuthData(**auth.model_dump()),
                 provider="fireworks",

@@ -155,6 +155,7 @@ def invoke_agent_in_cvm(
     temperature: float,
     max_tokens: int,
     max_iterations: int,
+    env_vars: Dict[str, Any],
 ):
     cvm_runner_host = getenv("CVM_RUNNER_HOST", "cvm.near.ai")
     cvm_runner_pool_port = getenv("CVM_RUNNER_POOL_PORT", "1234")
@@ -179,7 +180,7 @@ def invoke_agent_in_cvm(
                 temperature=temperature,
                 max_tokens=max_tokens,
                 max_iterations=max_iterations,
-                env_vars={"agent_env_vars": "test"},
+                env_vars=env_vars,
             )
             worker = client.assign(assign_request)
             logger.info(f"Assigned and running agent {agent_id} in CVM at {worker.port}")
